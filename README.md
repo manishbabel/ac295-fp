@@ -1,3 +1,47 @@
+  
+conda create -n tf python=3.7
+conda activate tf
+pip install tensorflow==1.15
+conda install spacy
+conda install pandas
+conda install pytorch==1.6.0 torchvision==0.7.0 -c pytorch
+  
+python /Users/babel/Documents/Manish/harvard/ac295/final_project/BERT4doc-Classification/codes/further-pre-training/create_pretraining_data.py \
+  --input_file=./pt_small.txt \
+  --output_file=tmp/pt_small.tfrecord \
+  --vocab_file=./vocab.txt \
+  --do_lower_case=True \
+  --max_seq_length=128 \
+  --max_predictions_per_seq=20 \
+  --masked_lm_prob=0.15 \
+  --random_seed=12345 \
+  --dupe_factor=5
+
+ 
+python /Users/babel/Documents/Manish/harvard/ac295/final_project/BERT4doc-Classification/codes/further-pre-training/run_pretraining.py \
+  --input_file=./tmp/pt_small.tfrecord\
+  --output_dir=./uncased_L-12_H-768_A-12_pt_small_pretrain \
+  --do_train=True \
+  --do_eval=True \
+  --bert_config_file=./bert_config.json \
+  --init_checkpoint=./uncased_L-12_H-768_A-12/bert_model.ckpt \
+  --train_batch_size=32 \
+  --max_seq_length=128 \
+  --max_predictions_per_seq=20 \
+  --num_train_steps=100000 \
+  --num_warmup_steps=10000 \
+  --save_checkpoints_steps=10000 \
+  --learning_rate=5e-5
+
+python /Users/babel/Documents/Manish/harvard/ac295/final_project/BERT4doc-Classification/codes/fine-tuning/convert_tf_checkpoint_to_pytorch.py \
+  --tf_checkpoint_path ./uncased_L-12_H-768_A-12_pt_small_pretrain/model.ckpt-100000 \
+  --bert_config_file ./bert_config.json \
+  --pytorch_dump_path ./uncased_L-12_H-768_A-12_pt_small_pretrain/pytorch_model.bin
+
+
+
+
+
 # How to Fine-Tune BERT for Text Classification?
 
 This is the code and source for the paper [How to Fine-Tune BERT for Text Classification?](https://arxiv.org/abs/1905.05583)
